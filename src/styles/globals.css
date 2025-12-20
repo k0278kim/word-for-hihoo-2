@@ -4,3 +4,70 @@
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
+
+@layer base {
+  body {
+    @apply bg-neutral-50 text-neutral-900;
+  }
+}
+
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    font-size: 10pt;
+  }
+
+  main {
+    background: none !important;
+    padding: 0 !important;
+  }
+
+  @page {
+    size: A4;
+    margin: 1cm 1.5cm;
+  }
+
+  .print\:p-2 {
+    padding: 4pt 6pt !important;
+  }
+
+  .print\:text-base {
+    font-size: 11pt !important;
+    font-weight: 600 !important;
+  }
+
+  .print\:text-sm {
+    font-size: 10pt !important;
+  }
+
+  .print\:columns-2 {
+    column-count: 2 !important;
+    column-gap: 1.2cm !important;
+    column-rule: 0.5px solid #e5e7eb;
+  }
+
+  .print\:border-black {
+    border-color: #374151 !important;
+  }
+}
+
+/* Custom Scrollbar for Minimal Look */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #d1d5db;
+}
