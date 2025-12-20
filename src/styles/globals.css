@@ -12,45 +12,94 @@
 }
 
 @media print {
+  @page {
+    margin: 1.5cm 1.2cm;
+    size: A4;
+  }
+
   body {
+    background: white !important;
     background-color: white !important;
     color: black !important;
+    font-size: 9pt;
+    /* 폰트 크기 축소 */
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
-    font-size: 10pt;
   }
 
-  main {
-    background: none !important;
-    padding: 0 !important;
+  /* 모든 웹 UI 요소 및 선택 효과 비활성화 */
+  * {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    transition: none !important;
+    outline: none !important;
   }
 
-  @page {
-    size: A4;
-    margin: 1cm 1.5cm;
+  /* 선택 강조 표시(파란 배경 및 링) 절대 출력 안 되게 함 */
+  .bg-blue-50\/80,
+  .ring-2,
+  .ring-inset,
+  .ring-blue-300,
+  .bg-neutral-50\/30 {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+    border-color: transparent;
   }
 
-  .print\:p-2 {
-    padding: 4pt 6pt !important;
+  .print\:hidden {
+    display: none !important;
   }
 
-  .print\:text-base {
-    font-size: 11pt !important;
-    font-weight: 600 !important;
+  /* 2단 컬럼 설정 */
+  .grid-cols-1 {
+    display: block !important;
+    column-count: 2;
+    column-gap: 1.2cm;
+    /* 중앙 여백 축소 */
+    column-rule: 0.2pt solid #000000;
   }
 
-  .print\:text-sm {
-    font-size: 10pt !important;
+  /* 행 높이를 고정하여 60단어가 한 페이지에 딱 맞게 조정 (0.65cm * 30행 = 19.5cm) */
+  .min-h-\[3rem\],
+  .print\:break-inside-avoid {
+    min-height: 0.65cm !important;
+    height: 0.65cm !important;
+    border-bottom: 0.3pt solid #000000 !important;
+    break-inside: avoid;
   }
 
-  .print\:columns-2 {
-    column-count: 2 !important;
-    column-gap: 1.2cm !important;
-    column-rule: 0.5px solid #e5e7eb;
+  /* 영단어와 뜻의 시각적 분리를 위한 진한 선 */
+  .print\:border-sep {
+    border-right: 1.2pt solid #000000 !important;
   }
 
-  .print\:border-black {
-    border-color: #374151 !important;
+  /* 번호 열 최적화 */
+  .print\:num-col {
+    width: 25pt !important;
+    border-right: 0.3pt solid #000000 !important;
+    font-size: 7.5pt !important;
+    color: #666 !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .border-r {
+    border-right: 0.3pt solid #000000 !important;
+  }
+
+  footer {
+    display: grid !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-top: 0.8pt solid #000;
+    padding-top: 0.3cm;
+    margin-top: 0 !important;
+    font-size: 8pt;
   }
 }
 

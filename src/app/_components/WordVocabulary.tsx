@@ -19,7 +19,7 @@ type Selection = {
 const STORAGE_KEY = "word-sheet-data";
 
 export function WordVocabulary() {
-    const [isTestMode, setIsTestMode] = useState(false);
+    const [testMode, setTestMode] = useState<"study" | "word" | "meaning">("study");
     const [localWords, setLocalWords] = useState<Word[]>([]);
 
     // 상태 분리: 선택 vs 편집
@@ -252,28 +252,31 @@ export function WordVocabulary() {
                 </div>
                 <div className="flex items-center gap-2 bg-neutral-100 p-1 rounded-xl">
                     {isMultiRowSelected && (
-                        <button onClick={handleShuffleSelection} className="px-4 py-1.5 rounded-lg text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200">인덱스 셔플</button>
+                        <button onClick={handleShuffleSelection} className="px-4 py-1.5 rounded-lg text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200">인쇄 인덱스 셔플</button>
                     )}
-                    <button onClick={() => setIsTestMode(false)} className={`px-4 py-1.5 rounded-lg text-xs font-semibold ${!isTestMode ? "bg-white shadow-sm" : "text-neutral-500"}`}>학습 모드</button>
-                    <button onClick={() => setIsTestMode(true)} className={`px-4 py-1.5 rounded-lg text-xs font-semibold ${isTestMode ? "bg-white shadow-sm" : "text-neutral-500"}`}>시험 모드</button>
+                    <button onClick={() => setTestMode("study")} className={`px-4 py-1.5 rounded-lg text-xs font-semibold ${testMode === "study" ? "bg-white shadow-sm" : "text-neutral-500"}`}>학습</button>
+                    <button onClick={() => setTestMode("word")} className={`px-4 py-1.5 rounded-lg text-xs font-semibold ${testMode === "word" ? "bg-white shadow-sm" : "text-neutral-500"}`}>단어 시험</button>
+                    <button onClick={() => setTestMode("meaning")} className={`px-4 py-1.5 rounded-lg text-xs font-semibold ${testMode === "meaning" ? "bg-white shadow-sm" : "text-neutral-500"}`}>뜻 시험</button>
                     <div className="w-px h-3 bg-neutral-300 mx-1" />
-                    <button onClick={deleteAll} className="px-4 py-1.5 rounded-lg text-xs font-semibold text-red-500 hover:bg-red-50 transition-all">초기화</button>
+                    <button onClick={deleteAll} className="px-4 py-1.5 rounded-lg text-xs font-semibold text-red-500 hover:bg-neutral-200/50 transition-all">초기화</button>
                     <div className="w-px h-3 bg-neutral-300 mx-1" />
-                    <button onClick={() => window.print()} className="px-4 py-1.5 rounded-lg text-xs font-semibold text-neutral-700 hover:bg-neutral-200 transition-all">인쇄</button>
+                    <button onClick={() => window.print()} className="px-4 py-1.5 rounded-lg text-xs font-semibold text-neutral-700 bg-neutral-200 hover:bg-neutral-300 px-6 transition-all">인쇄</button>
                 </div>
             </header>
 
-            <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm overflow-hidden print:border-none">
-                <div className="grid grid-cols-1 print:block print:columns-2 print:gap-x-12 print:p-2">
+            <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm overflow-hidden print:border-none print:shadow-none print:rounded-none">
+                <div className="grid grid-cols-1 print:p-0">
                     {localWords.map((item, index) => (
-                        <div key={item.id} className="group flex items-stretch border-b border-neutral-100 min-h-[3rem] print:break-inside-avoid">
-                            <div onMouseDown={(e) => { e.preventDefault(); onMouseDown(index, "word", e.clientX, e.clientY); }} onMouseEnter={() => onMouseEnter(index, "word")} className="w-10 flex items-center justify-center text-[9px] font-mono text-neutral-300 bg-neutral-50/30 cursor-cell">{String(index + 1).padStart(2, "0")}</div>
+                        <div key={item.id} className="group flex items-stretch border-b border-neutral-100 min-h-[3rem] print:border-black print:break-inside-avoid">
+                            <div onMouseDown={(e) => { e.preventDefault(); onMouseDown(index, "word", e.clientX, e.clientY); }} onMouseEnter={() => onMouseEnter(index, "word")} className="w-10 flex items-center justify-center text-[9px] font-mono text-neutral-300 bg-neutral-50/30 cursor-cell print:num-col">{String(index + 1).padStart(2, "0")}</div>
 
                             <div
                                 onMouseDown={(e) => { e.preventDefault(); onMouseDown(index, "word", e.clientX, e.clientY); }} onMouseEnter={() => onMouseEnter(index, "word")} onDoubleClick={() => { setSelectedId(item.id); setSelectedField("word"); setEditingId(item.id); setEditingField("word"); }}
-                                className={`flex-1 min-w-0 border-r border-neutral-100 flex items-center px-4 transition-colors relative cursor-cell ${isSelected(index, "word") ? "bg-blue-50/80 ring-2 ring-inset ring-blue-300 z-10" : ""}`}
+                                className={`flex-1 min-w-0 border-r border-neutral-100 flex items-center px-4 transition-colors relative cursor-cell print:border-sep print:px-2 ${isSelected(index, "word") ? "bg-blue-50/80 ring-2 ring-inset ring-blue-300 z-10 print:bg-transparent print:ring-0" : ""}`}
                             >
-                                {editingId === item.id && editingField === "word" ? (
+                                {testMode === "word" ? (
+                                    <div className="w-full border-b border-neutral-200 print:border-black h-1 mt-4 print:mt-1 print:h-[8pt]"></div>
+                                ) : editingId === item.id && editingField === "word" ? (
                                     <input
                                         autoFocus
                                         value={item.word}
@@ -287,19 +290,19 @@ export function WordVocabulary() {
                                                 if (!isComposing) navigateWithTab(e.shiftKey);
                                             }
                                         }}
-                                        className="w-full h-full bg-transparent outline-none font-medium text-neutral-900"
+                                        className="w-full h-full bg-transparent outline-none font-medium text-neutral-900 print:text-[10pt]"
                                     />
                                 ) : (
-                                    <span className="truncate font-medium text-neutral-900 print:text-base">{item.word}</span>
+                                    <span className="truncate font-medium text-neutral-900 print:text-[10pt]">{item.word}</span>
                                 )}
                             </div>
 
                             <div
-                                onMouseDown={(e) => { e.preventDefault(); onMouseDown(index, "meaning", e.clientX, e.clientY); }} onMouseEnter={() => onMouseEnter(index, "meaning")} onDoubleClick={() => !isTestMode && (setSelectedId(item.id), setSelectedField("meaning"), setEditingId(item.id), setEditingField("meaning"))}
-                                className={`flex-1 min-w-0 flex items-center px-4 transition-colors relative cursor-cell ${isSelected(index, "meaning") ? "bg-blue-50/80 ring-2 ring-inset ring-blue-300 z-10" : ""}`}
+                                onMouseDown={(e) => { e.preventDefault(); onMouseDown(index, "meaning", e.clientX, e.clientY); }} onMouseEnter={() => onMouseEnter(index, "meaning")} onDoubleClick={() => testMode === "study" && (setSelectedId(item.id), setSelectedField("meaning"), setEditingId(item.id), setEditingField("meaning"))}
+                                className={`flex-1 min-w-0 flex items-center px-4 transition-colors relative cursor-cell print:px-2 ${isSelected(index, "meaning") ? "bg-blue-50/80 ring-2 ring-inset ring-blue-300 z-10 print:bg-transparent print:ring-0" : ""}`}
                             >
-                                {isTestMode ? (
-                                    <div className="w-full border-b border-neutral-200 print:border-black/30 h-1 mt-4"></div>
+                                {testMode === "meaning" ? (
+                                    <div className="w-full border-b border-neutral-200 print:border-black h-1 mt-4 print:mt-1 print:h-[8pt]"></div>
                                 ) : editingId === item.id && editingField === "meaning" ? (
                                     <input
                                         autoFocus
@@ -314,10 +317,10 @@ export function WordVocabulary() {
                                                 if (!isComposing) navigateWithTab(e.shiftKey);
                                             }
                                         }}
-                                        className="w-full h-full bg-transparent outline-none text-neutral-600"
+                                        className="w-full h-full bg-transparent outline-none text-neutral-600 print:text-[9pt] print:text-black"
                                     />
                                 ) : (
-                                    <span className="truncate text-neutral-500 print:text-neutral-900 print:text-sm">{item.meaning}</span>
+                                    <span className="truncate text-neutral-500 print:text-black print:text-[9pt]">{item.meaning}</span>
                                 )}
                             </div>
 
@@ -328,18 +331,18 @@ export function WordVocabulary() {
                 </div>
             </div>
 
-            <footer className="hidden print:grid grid-cols-3 gap-12 mt-20 px-4 py-8 border-t-2 border-black/10 text-[9pt] text-neutral-500">
-                <div className="space-y-4">
-                    <div className="flex items-center gap-3"><span className="font-bold text-black w-12">NAME</span><div className="flex-1 border-b border-neutral-200 h-5"></div></div>
-                    <div className="flex items-center gap-3"><span className="font-bold text-black w-12">DATE</span><div className="flex-1 border-b border-neutral-200 h-5">{new Date().toLocaleDateString()}</div></div>
+            <footer className="hidden print:grid grid-cols-3 gap-12 mt-12 px-2 py-6 border-t border-black text-neutral-600">
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2"><span className="font-bold text-black text-[9pt] w-12">NAME</span><div className="flex-1 border-b border-black h-4"></div></div>
+                    <div className="flex items-center gap-2"><span className="font-bold text-black text-[9pt] w-12">DATE</span><div className="flex-1 border-b border-black h-4">{new Date().toLocaleDateString()}</div></div>
                 </div>
-                <div className="flex flex-col items-center justify-center border-x border-neutral-100 px-8">
-                    <span className="text-[7px] font-black text-neutral-300 uppercase mb-2">Total Vocabulary</span>
-                    <span className="text-3xl font-light text-black">{localWords.length}</span>
+                <div className="flex flex-col items-center justify-center">
+                    <span className="text-[10pt] font-bold text-black uppercase">Word Sheet Test</span>
+                    <span className="text-[7pt] text-neutral-400 mt-1">Total {localWords.length} Words</span>
                 </div>
                 <div className="flex flex-col items-end justify-center">
-                    <div className="w-24 h-24 border-4 border-neutral-100 rounded-full flex flex-col items-center justify-center relative">
-                        <span className="text-[7px] font-black text-neutral-300 uppercase absolute top-4">Score</span>
+                    <div className="w-20 h-20 border border-black rounded-lg flex flex-col items-center justify-center relative">
+                        <span className="text-[7pt] font-bold text-black absolute top-2">SCORE</span>
                         <span className="text-xl font-light text-black">/ {localWords.length}</span>
                     </div>
                 </div>
