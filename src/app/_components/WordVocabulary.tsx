@@ -41,7 +41,8 @@ export function WordVocabulary() {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
             try {
-                setLocalWords(JSON.parse(saved));
+                const parsed = JSON.parse(saved) as Word[];
+                setLocalWords(parsed);
             } catch (e) {
                 console.error("Failed to parse saved data", e);
             }
@@ -67,7 +68,7 @@ export function WordVocabulary() {
         setLocalWords(prev => prev.map(w => w.id === id ? { ...w, [field]: value } : w));
     };
 
-    const handleCreateBelow = () => {
+    const handleCreateBelow = useCallback(() => {
         const currentIndex = localWords.findIndex(w => w.id === selectedId);
         const newWord: Word = {
             id: Math.random().toString(36).substring(2, 9),
@@ -87,7 +88,7 @@ export function WordVocabulary() {
         setSelectedField("word");
         setEditingId(newWord.id);
         setEditingField("word");
-    };
+    }, [localWords, selectedId]);
 
     const handleShuffleSelection = () => {
         if (!selection) return;
@@ -141,45 +142,9 @@ export function WordVocabulary() {
 
     const [isComposing, setIsComposing] = useState(false);
 
-    useEffect(() => {
-        const handleKeyDownGlobal = (e: KeyboardEvent) => {
-            if (isComposing) return; // 한글 조합 중에는 전역 핸들러 차단
 
-            if (selection && (e.key === "Backspace" || e.key === "Delete")) {
-                if (editingId === null) { e.preventDefault(); clearSelection(); return; }
-            }
-            if (selectedId && editingId === null && !e.ctrlKey && !e.metaKey && !e.altKey && e.key.length === 1) {
-                setEditingId(selectedId);
-                setEditingField(selectedField);
-            }
-            if (e.key === "Enter") {
-                if (editingId) { e.preventDefault(); setEditingId(null); }
-                else if (selectedId) { e.preventDefault(); handleCreateBelow(); }
-            }
-            if (e.key === "Tab") {
-                // 전역 핸들러에서의 Tab 처리는 포커스된 인풋이 없을 때만 동작하도록 하거나
-                // 인풋 내부 핸들러에서 stopPropagation을 쓰도록 유도
-                if (!editingId) {
-                    e.preventDefault();
-                    navigateWithTab(e.shiftKey);
-                }
-            }
-
-            if (e.key === "Escape") { setEditingId(null); setSelection(null); }
-            if (!editingId && selectedId) {
-                const index = localWords.findIndex(w => w.id === selectedId);
-                if (e.key === "ArrowDown" && index < localWords.length - 1) { e.preventDefault(); setSelectedId(localWords[index + 1]!.id); }
-                if (e.key === "ArrowUp" && index > 0) { e.preventDefault(); setSelectedId(localWords[index - 1]!.id); }
-                if (e.key === "ArrowRight" && selectedField === "word") { e.preventDefault(); setSelectedField("meaning"); }
-                if (e.key === "ArrowLeft" && selectedField === "meaning") { e.preventDefault(); setSelectedField("word"); }
-            }
-        };
-        window.addEventListener("keydown", handleKeyDownGlobal);
-        return () => window.removeEventListener("keydown", handleKeyDownGlobal);
-    }, [selectedId, selectedField, editingId, editingField, selection, clearSelection, localWords, isComposing]);
-
-    const navigateWithTab = (isShift: boolean) => {
-        const activeId = editingId || selectedId;
+    const navigateWithTab = useCallback((isShift: boolean) => {
+        const activeId = editingId ?? selectedId;
         const activeField = editingId ? editingField : selectedField;
         const index = localWords.findIndex(w => w.id === activeId);
 
@@ -214,7 +179,42 @@ export function WordVocabulary() {
                 }
             }
         }
-    };
+    }, [editingId, selectedId, editingField, selectedField, localWords, handleCreateBelow]);
+
+    useEffect(() => {
+        const handleKeyDownGlobal = (e: KeyboardEvent) => {
+            if (isComposing) return; // 한글 조합 중에는 전역 핸들러 차단
+
+            if (selection && (e.key === "Backspace" || e.key === "Delete")) {
+                if (editingId === null) { e.preventDefault(); clearSelection(); return; }
+            }
+            if (selectedId && editingId === null && !e.ctrlKey && !e.metaKey && !e.altKey && e.key.length === 1) {
+                setEditingId(selectedId);
+                setEditingField(selectedField);
+            }
+            if (e.key === "Enter") {
+                if (editingId) { e.preventDefault(); setEditingId(null); }
+                else if (selectedId) { e.preventDefault(); handleCreateBelow(); }
+            }
+            if (e.key === "Tab") {
+                if (!editingId) {
+                    e.preventDefault();
+                    navigateWithTab(e.shiftKey);
+                }
+            }
+
+            if (e.key === "Escape") { setEditingId(null); setSelection(null); }
+            if (!editingId && selectedId) {
+                const index = localWords.findIndex(w => w.id === selectedId);
+                if (e.key === "ArrowDown" && index < localWords.length - 1) { e.preventDefault(); setSelectedId(localWords[index + 1]!.id); }
+                if (e.key === "ArrowUp" && index > 0) { e.preventDefault(); setSelectedId(localWords[index - 1]!.id); }
+                if (e.key === "ArrowRight" && selectedField === "word") { e.preventDefault(); setSelectedField("meaning"); }
+                if (e.key === "ArrowLeft" && selectedField === "meaning") { e.preventDefault(); setSelectedField("word"); }
+            }
+        };
+        window.addEventListener("keydown", handleKeyDownGlobal);
+        return () => window.removeEventListener("keydown", handleKeyDownGlobal);
+    }, [selectedId, selectedField, editingId, editingField, selection, clearSelection, localWords, isComposing, handleCreateBelow, navigateWithTab]);
 
     const onMouseDown = (row: number, field: "word" | "meaning", x: number, y: number) => {
         setIsDragging(true); dragStartPos.current = { x, y }; setEditingId(null);
