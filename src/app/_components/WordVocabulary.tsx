@@ -21,6 +21,8 @@ const STORAGE_KEY = "word-sheet-data";
 export function WordVocabulary() {
     const [testMode, setTestMode] = useState<"study" | "word" | "meaning">("study");
     const [localWords, setLocalWords] = useState<Word[]>([]);
+    const [isLoaded, setIsLoaded] = useState(false);
+    const [lastSaved, setLastSaved] = useState<number | null>(null);
 
     // 상태 분리: 선택 vs 편집
     const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -44,17 +46,22 @@ export function WordVocabulary() {
                 console.error("Failed to parse saved data", e);
             }
         } else {
-            // 초기 데이터
             setLocalWords([{ id: "initial-1", word: "Experience", meaning: "경험", createdAt: Date.now() }]);
         }
+        setIsLoaded(true);
     }, []);
 
-    // Save to LocalStorage whenever data changes
+    // Save to LocalStorage whenever data changes (with simple debounce effect via useEffect)
     useEffect(() => {
-        if (localWords.length > 0 || localStorage.getItem(STORAGE_KEY)) {
+        if (!isLoaded) return;
+
+        const timeout = setTimeout(() => {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(localWords));
-        }
-    }, [localWords]);
+            setLastSaved(Date.now());
+        }, 500); // 0.5초 간격으로 디바운스 저장
+
+        return () => clearTimeout(timeout);
+    }, [localWords, isLoaded]);
 
     const handleLocalUpdate = (id: string, field: "word" | "meaning", value: string) => {
         setLocalWords(prev => prev.map(w => w.id === id ? { ...w, [field]: value } : w));
@@ -248,7 +255,15 @@ export function WordVocabulary() {
             <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4 print:hidden">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-neutral-900 italic">Word Sheet</h1>
-                    <p className="text-neutral-400 mt-1 text-sm">브라우저에 로컬로 저장되는 나만의 영단어장입니다.</p>
+                    <div className="flex items-center gap-2 mt-1">
+                        <p className="text-neutral-400 text-sm">브라우저에 자동 저장되는 나만의 영단어장</p>
+                        {lastSaved && (
+                            <span className="flex items-center gap-1 text-[10px] font-bold text-green-500 bg-green-50 px-2 py-0.5 rounded-full animate-pulse">
+                                <div className="w-1 h-1 bg-green-500 rounded-full" />
+                                저장됨
+                            </span>
+                        )}
+                    </div>
                 </div>
                 <div className="flex items-center gap-2 bg-neutral-100 p-1 rounded-xl">
                     {isMultiRowSelected && (
