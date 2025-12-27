@@ -346,7 +346,7 @@ export function WordVocabulary() {
                 </div>
             </div>
 
-            <footer className="hidden print:grid grid-cols-3 gap-12 mt-12 px-2 py-6 border-t border-black text-neutral-600">
+            {/* <footer className="hidden print:grid grid-cols-3 gap-12 mt-12 px-2 py-6 border-t border-black text-neutral-600">
                 <div className="space-y-3">
                     <div className="flex items-center gap-2"><span className="font-bold text-black text-[9pt] w-12">NAME</span><div className="flex-1 border-b border-black h-4"></div></div>
                     <div className="flex items-center gap-2"><span className="font-bold text-black text-[9pt] w-12">DATE</span><div className="flex-1 border-b border-black h-4">{new Date().toLocaleDateString()}</div></div>
@@ -361,7 +361,7 @@ export function WordVocabulary() {
                         <span className="text-xl font-light text-black">/ {localWords.length}</span>
                     </div>
                 </div>
-            </footer>
+            </footer> */}
         </div>
     );
 }
